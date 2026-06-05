@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argo DidUp - Giornale di Classe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h5><i class="fas fa-book-open"></i> DidUp</h5>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="registro.html"><i class="fas fa-book"></i> Registro</a></li>
+                <li><a href="scrutini.html"><i class="fas fa-chart-bar"></i> Scrutini</a></li>
+                <li><a href="orali.html"><i class="fas fa-microphone"></i> Didattica</a></li>
+                <li><a href="#"><i class="fas fa-bullhorn"></i> Bacheca</a></li>
+                <li><a href="firma.html" class="active"><i class="fas fa-clock"></i> Orario</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Esci</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-dark navbar-custom">
+                <div class="container-fluid">
+                    <span class="navbar-brand">
+                        <i class="fas fa-book-open"></i> DidUp - Docente: <strong id="teacherName"></strong>
+                    </span>
+                    <div class="nav-user">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="container-fluid">
+                    <div class="row align-items-center mb-4">
+                        <div class="col">
+                            <h2>Giornale di Classe</h2>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuovaLezione">
+                                <i class="fas fa-plus"></i> Nuova Lezione
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filtri -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label">Da</label>
+                                    <input type="date" id="dataDal" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Al</label>
+                                    <input type="date" id="dataAl" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Materia</label>
+                                    <input type="text" id="filtroMateria" class="form-control" placeholder="Filtra per materia">
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary" onclick="filtraLezioni()">
+                                        <i class="fas fa-filter"></i> Filtra
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabella Lezioni -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Lezioni Registrate</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Ora</th>
+                                            <th>Materia</th>
+                                            <th>Argomento Svolto</th>
+                                            <th>Compiti Assegnati</th>
+                                            <th>Azioni</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabellaLezioni">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuova Lezione -->
+    <div class="modal fade" id="modalNuovaLezione" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuova Lezione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" id="dataLezione">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ora</label>
+                            <input type="time" class="form-control" id="oraLezione">
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Materia</label>
+                        <input type="text" class="form-control" id="materiaLezione" placeholder="Es: Matematica">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Argomento Svolto</label>
+                        <textarea class="form-control" id="argomentoLezione" rows="3" placeholder="Descrivi gli argomenti trattati durante la lezione"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Compiti Assegnati</label>
+                        <textarea class="form-control" id="compitiLezione" rows="3" placeholder="Scrivi i compiti da svolgere"></textarea>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Nota:</strong> La lezione sarà visibile a tutti gli alunni della classe.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="button" class="btn btn-primary" onclick="salvaLezione()">Salva Lezione</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dettaglio Lezione -->
+    <div class="modal fade" id="modalDettaglioLezione" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Dettagli Lezione - <span id="dataDettaglio"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Materia:</strong></label>
+                        <p id="materiaDettaglio"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Ora:</strong></label>
+                        <p id="oraDettaglio"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Argomento Svolto:</strong></label>
+                        <p id="argomentoDettaglio"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Compiti Assegnati:</strong></label>
+                        <p id="compitiDettaglio"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="eliminaLezione()">
+                        <i class="fas fa-trash"></i> Elimina
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const teacherName = localStorage.getItem('teacher_name');
+            if (!teacherName) window.location.href = 'index.html';
+            document.getElementById('teacherName').textContent = teacherName;
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dataLezione').value = today;
+            document.getElementById('oraLezione').value = '09:00';
+
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            document.getElementById('dataDal').valueAsDate = oneMonthAgo;
+            document.getElementById('dataAl').valueAsDate = new Date();
+
+            caricaTabellaLezioni();
+        });
+
+        function caricaTabellaLezioni() {
+            const tbody = document.getElementById('tabellaLezioni');
+            tbody.innerHTML = '';
+            const lezioni = JSON.parse(localStorage.getItem('lezioni') || '[]');
+
+            lezioni.sort((a, b) => new Date(b.data + ' ' + b.ora) - new Date(a.data + ' ' + a.ora));
+
+            lezioni.forEach((lezione, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(lezione.data).toLocaleDateString('it-IT')}</td>
+                    <td>${lezione.ora}</td>
+                    <td><strong>${lezione.materia}</strong></td>
+                    <td>${lezione.argomento.substring(0, 50)}${lezione.argomento.length > 50 ? '...' : ''}</td>
+                    <td>${lezione.compiti.substring(0, 50)}${lezione.compiti.length > 50 ? '...' : ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="apriDettaglioLezione(${index})">
+                            <i class="fas fa-eye"></i> Dettagli
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (lezioni.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nessuna lezione registrata</td></tr>';
+            }
+        }
+
+        function salvaLezione() {
+            const data = document.getElementById('dataLezione').value;
+            const ora = document.getElementById('oraLezione').value;
+            const materia = document.getElementById('materiaLezione').value;
+            const argomento = document.getElementById('argomentoLezione').value;
+            const compiti = document.getElementById('compitiLezione').value;
+
+            if (!data || !ora || !materia || !argomento || !compiti) {
+                alert('Compila tutti i campi obbligatori');
+                return;
+            }
+
+            const lezioni = JSON.parse(localStorage.getItem('lezioni') || '[]');
+            lezioni.push({
+                data: data,
+                ora: ora,
+                materia: materia,
+                argomento: argomento,
+                compiti: compiti
+            });
+
+            localStorage.setItem('lezioni', JSON.stringify(lezioni));
+            bootstrap.Modal.getInstance(document.getElementById('modalNuovaLezione')).hide();
+            caricaTabellaLezioni();
+
+            // Reset form
+            document.getElementById('dataLezione').value = new Date().toISOString().split('T')[0];
+            document.getElementById('oraLezione').value = '09:00';
+            document.getElementById('materiaLezione').value = '';
+            document.getElementById('argomentoLezione').value = '';
+            document.getElementById('compitiLezione').value = '';
+        }
+
+        function apriDettaglioLezione(index) {
+            const lezioni = JSON.parse(localStorage.getItem('lezioni') || '[]');
+            const lezione = lezioni[index];
+            window.currentLezioneIndex = index;
+
+            document.getElementById('dataDettaglio').textContent = new Date(lezione.data).toLocaleDateString('it-IT');
+            document.getElementById('materiaDettaglio').textContent = lezione.materia;
+            document.getElementById('oraDettaglio').textContent = lezione.ora;
+            document.getElementById('argomentoDettaglio').textContent = lezione.argomento;
+            document.getElementById('compitiDettaglio').textContent = lezione.compiti;
+
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDettaglioLezione')).show();
+        }
+
+        function eliminaLezione() {
+            if (confirm('Sei sicuro di voler eliminare questa lezione?')) {
+                const lezioni = JSON.parse(localStorage.getItem('lezioni') || '[]');
+                lezioni.splice(window.currentLezioneIndex, 1);
+                localStorage.setItem('lezioni', JSON.stringify(lezioni));
+                bootstrap.Modal.getInstance(document.getElementById('modalDettaglioLezione')).hide();
+                caricaTabellaLezioni();
+            }
+        }
+
+        function filtraLezioni() {
+            alert('Filtri applicati');
+        }
+
+        function logout() {
+            localStorage.removeItem('teacher_name');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
