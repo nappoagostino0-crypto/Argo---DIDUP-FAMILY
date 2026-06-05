@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argo DidUp - Appello</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h5><i class="fas fa-book-open"></i> DidUp</h5>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="classe.html"><i class="fas fa-users"></i> Gestione Classe</a></li>
+                <li><a href="registro.html" class="active"><i class="fas fa-book"></i> Appello</a></li>
+                <li><a href="orali.html"><i class="fas fa-microphone"></i> Voti Orali</a></li>
+                <li><a href="scritti.html"><i class="fas fa-pen"></i> Voti Scritti</a></li>
+                <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note</a></li>
+                <li><a href="scrutini.html"><i class="fas fa-chart-bar"></i> Scrutini</a></li>
+                <li><a href="firma.html"><i class="fas fa-clock"></i> Firma Ore</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Esci</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-dark navbar-custom">
+                <div class="container-fluid">
+                    <span class="navbar-brand">
+                        <i class="fas fa-book-open"></i> DidUp - Appello
+                    </span>
+                    <div class="nav-user" onclick="logout()" style="cursor: pointer;">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="container-fluid">
+                    <h2 class="mb-4">Appello</h2>
+
+                    <!-- Date Selector -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label"><i class="fas fa-calendar"></i> Data</label>
+                                    <input type="date" id="dateInput" class="form-control">
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-primary" onclick="loadAttendance()">
+                                        <i class="fas fa-search"></i> Carica
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Students Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-list"></i> Elenco Alunni</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="noStudentsAlert" class="alert alert-warning">
+                                <i class="fas fa-inbox"></i> Nessun alunno caricato. Vai su <a href="classe.html">Gestione Classe</a> per importare gli alunni.
+                            </div>
+
+                            <div class="table-responsive" id="tableContainer" style="display: none;">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Alunno</th>
+                                            <th>Presente</th>
+                                            <th>Assente</th>
+                                            <th>Ritardi/Uscite</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentsList">
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <button class="btn btn-success mt-3" id="saveBtn" style="display: none;" onclick="saveAttendance()">
+                                <i class="fas fa-save"></i> Salva
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Ritardi/Uscite -->
+    <div class="modal fade" id="delayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ritardo/Uscita - <span id="modalStudentName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ore</label>
+                            <input type="number" class="form-control" id="delayHours" min="0" max="23" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Minuti</label>
+                            <input type="number" class="form-control" id="delayMinutes" min="0" max="59" value="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Motivazione</label>
+                        <select class="form-control" id="delayReason">
+                            <option value="ritardo">Ritardo</option>
+                            <option value="uscita">Uscita</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="button" class="btn btn-primary" onclick="saveDelay()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+        let currentAttendance = {};
+        let currentStudentId = null;
+        let allStudents = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    window.location.href = 'index.html';
+                }
+                
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('dateInput').value = today;
+                
+                loadStudents();
+                loadAttendance();
+            });
+        });
+
+        function loadStudents() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            db.ref('/utenti/' + user.uid + '/alunni').once('value', function(snapshot) {
+                const alunni = snapshot.val();
+                allStudents = alunni || {};
+
+                if (!alunni || Object.keys(alunni).length === 0) {
+                    document.getElementById('noStudentsAlert').style.display = 'block';
+                    document.getElementById('tableContainer').style.display = 'none';
+                    document.getElementById('saveBtn').style.display = 'none';
+                } else {
+                    document.getElementById('noStudentsAlert').style.display = 'none';
+                    document.getElementById('tableContainer').style.display = 'block';
+                    document.getElementById('saveBtn').style.display = 'inline-block';
+                }
+            });
+        }
+
+        function loadAttendance() {
+            const user = auth.currentUser;
+            const date = document.getElementById('dateInput').value;
+
+            if (!user) return;
+
+            db.ref('/utenti/' + user.uid + '/appello/' + date).once('value', function(snapshot) {
+                currentAttendance = snapshot.val() || {};
+                renderAttendanceTable();
+            });
+        }
+
+        function renderAttendanceTable() {
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = '';
+
+            Object.entries(allStudents).forEach(([id, student]) => {
+                const attendance = currentAttendance[id] || 'neutro';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${student.nome} ${student.cognome}</td>
+                    <td>
+                        <button class="btn btn-sm ${attendance === 'presente' ? 'btn-success' : 'btn-outline-success'}" 
+                                onclick="setAttendance('${id}', 'presente')">
+                            <i class="fas fa-check"></i> Presente
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm ${attendance === 'assente' ? 'btn-danger' : 'btn-outline-danger'}" 
+                                onclick="setAttendance('${id}', 'assente')">
+                            <i class="fas fa-times"></i> Assente
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="openDelayModal('${id}', '${student.nome} ${student.cognome}')">
+                            <i class="fas fa-clock"></i> Ritardo/Uscita
+                        </button>
+                    </td>
+                `;
+                studentsList.appendChild(tr);
+            });
+        }
+
+        function setAttendance(studentId, status) {
+            currentAttendance[studentId] = status;
+            renderAttendanceTable();
+        }
+
+        function openDelayModal(studentId, studentName) {
+            currentStudentId = studentId;
+            document.getElementById('modalStudentName').textContent = studentName;
+            document.getElementById('delayHours').value = '0';
+            document.getElementById('delayMinutes').value = '0';
+            document.getElementById('delayReason').value = 'ritardo';
+            new bootstrap.Modal(document.getElementById('delayModal')).show();
+        }
+
+        function saveDelay() {
+            const user = auth.currentUser;
+            const date = document.getElementById('dateInput').value;
+            const hours = document.getElementById('delayHours').value;
+            const minutes = document.getElementById('delayMinutes').value;
+            const reason = document.getElementById('delayReason').value;
+
+            if (!currentStudentId || !user) return;
+
+            const delayKey = 'delay_' + Date.now();
+            const delays = currentAttendance[currentStudentId + '_delays'] || {};
+            delays[delayKey] = {
+                hours: parseInt(hours),
+                minutes: parseInt(minutes),
+                reason: reason,
+                timestamp: new Date().toISOString()
+            };
+
+            currentAttendance[currentStudentId + '_delays'] = delays;
+            bootstrap.Modal.getInstance(document.getElementById('delayModal')).hide();
+            renderAttendanceTable();
+        }
+
+        function saveAttendance() {
+            const user = auth.currentUser;
+            const date = document.getElementById('dateInput').value;
+
+            if (!user) return;
+
+            db.ref('/utenti/' + user.uid + '/appello/' + date).set(currentAttendance)
+                .then(() => {
+                    alert('Appello salvato con successo!');
+                })
+                .catch(error => {
+                    alert('Errore: ' + error.message);
+                });
+        }
+
+        function logout() {
+            if (confirm('Sei sicuro di voler uscire?')) {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                });
+            }
+        }
+    </script>
+</body>
+</html>
