@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Argo DidUp - Valutazioni Scritte</title>
+    <title>Argo DidUp - Voti Scritti</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -16,12 +16,14 @@
                 <h5><i class="fas fa-book-open"></i> DidUp</h5>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html"><i class="fas fa-home"></i> Home</a></li>
-                <li><a href="registro.html"><i class="fas fa-book"></i> Registro</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="classe.html"><i class="fas fa-users"></i> Gestione Classe</a></li>
+                <li><a href="registro.html"><i class="fas fa-book"></i> Appello</a></li>
+                <li><a href="orali.html"><i class="fas fa-microphone"></i> Voti Orali</a></li>
+                <li><a href="scritti.html" class="active"><i class="fas fa-pen"></i> Voti Scritti</a></li>
+                <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note</a></li>
                 <li><a href="scrutini.html"><i class="fas fa-chart-bar"></i> Scrutini</a></li>
-                <li><a href="orali.html"><i class="fas fa-microphone"></i> Didattica</a></li>
-                <li><a href="#"><i class="fas fa-bullhorn"></i> Bacheca</a></li>
-                <li><a href="firma.html"><i class="fas fa-clock"></i> Orario</a></li>
+                <li><a href="firma.html"><i class="fas fa-clock"></i> Firma Ore</a></li>
             </ul>
             <div class="sidebar-footer">
                 <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Esci</a>
@@ -34,9 +36,9 @@
             <nav class="navbar navbar-dark navbar-custom">
                 <div class="container-fluid">
                     <span class="navbar-brand">
-                        <i class="fas fa-book-open"></i> DidUp - Docente: <strong id="teacherName"></strong>
+                        <i class="fas fa-book-open"></i> DidUp - Voti Scritti
                     </span>
-                    <div class="nav-user">
+                    <div class="nav-user" onclick="logout()" style="cursor: pointer;">
                         <i class="fas fa-user-circle"></i>
                     </div>
                 </div>
@@ -47,58 +49,24 @@
                 <div class="container-fluid">
                     <h2 class="mb-4">Valutazioni Scritte</h2>
 
-                    <!-- Filtri -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-end">
-                                <div class="col-md-3">
-                                    <label class="form-label">Da</label>
-                                    <input type="date" id="dataDal" class="form-control">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Al</label>
-                                    <input type="date" id="dataAl" class="form-control">
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-primary" onclick="filtraProve()">
-                                        <i class="fas fa-filter"></i> Filtra
-                                    </button>
-                                </div>
-                                <div class="col-md-3 text-end">
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuovaProva">
-                                            <i class="fas fa-plus"></i> Aggiungi Valutazione
-                                        </button>
-                                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalValutazioneMultipla">
-                                            <i class="fas fa-copy"></i> Multipla
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div id="noStudentsAlert" class="alert alert-warning">
+                        <i class="fas fa-inbox"></i> Nessun alunno caricato. Vai su <a href="classe.html">Gestione Classe</a> per importare gli alunni.
                     </div>
 
-                    <!-- Tabella -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Elenco Alunni</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Alunno</th>
-                                            <th>Oggi</th>
-                                            <th>Media Voti</th>
-                                            <th>N° Voti</th>
-                                            <th>Azioni</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tabolaScritti">
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div id="contentContainer" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Alunno</th>
+                                        <th>Media Voti</th>
+                                        <th>N° Voti</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsList">
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -106,324 +74,210 @@
         </div>
     </div>
 
-    <!-- Modal Nuova Valutazione -->
-    <div class="modal fade" id="modalNuovaProva" tabindex="-1">
+    <!-- Modal for Adding Grade -->
+    <div class="modal fade" id="gradeModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Aggiungi Valutazione Scritta</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Data Valutazione</label>
-                        <input type="date" class="form-control" id="dataProva">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Descrizione</label>
-                        <input type="text" class="form-control" id="descProva" placeholder="Es: Verifica capitolo 5">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Alunni</label>
-                        <div id="listaAlunniProva"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                    <button type="button" class="btn btn-primary" onclick="salvaProva()">Salva</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Valutazione Multipla -->
-    <div class="modal fade" id="modalValutazioneMultipla" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Valutazione Multipla</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Data Valutazione</label>
-                        <input type="date" class="form-control" id="dataValutazioneMultipla">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Descrizione</label>
-                        <input type="text" class="form-control" id="descValutazioneMultipla" placeholder="Es: Test di comprensione">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Voto</label>
-                        <select class="form-control" id="votoMultiplo">
-                            <option value="">Seleziona voto</option>
-                            <option value="4">4</option>
-                            <option value="4+">4+</option>
-                            <option value="4.5">4½</option>
-                            <option value="5-">5-</option>
-                            <option value="5">5</option>
-                            <option value="5+">5+</option>
-                            <option value="5.5">5½</option>
-                            <option value="6-">6-</option>
-                            <option value="6">6</option>
-                            <option value="6+">6+</option>
-                            <option value="6.5">6½</option>
-                            <option value="7-">7-</option>
-                            <option value="7">7</option>
-                            <option value="7+">7+</option>
-                            <option value="7.5">7½</option>
-                            <option value="8-">8-</option>
-                            <option value="8">8</option>
-                            <option value="8+">8+</option>
-                            <option value="8.5">8½</option>
-                            <option value="9-">9-</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Seleziona Alunni</label>
-                        <div id="listaAlunniMultipla"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                    <button type="button" class="btn btn-primary" onclick="salvaValutazioneMultipla()">Salva</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Dettaglio Voto -->
-    <div class="modal fade" id="modalDettaglioVoto" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Dettaglio Voto - <span id="nomeAlunnoVoto"></span></h5>
+                    <h5 class="modal-title">Voto Scritto - <span id="modalStudentName"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Voto</label>
-                        <select class="form-control" id="selectVoto">
+                        <select class="form-control" id="gradeSelect">
                             <option value="">Seleziona voto</option>
                             <option value="4">4</option>
-                            <option value="4+">4+</option>
+                            <option value="4.25">4+</option>
                             <option value="4.5">4½</option>
-                            <option value="5-">5-</option>
+                            <option value="4.75">5-</option>
                             <option value="5">5</option>
-                            <option value="5+">5+</option>
+                            <option value="5.25">5+</option>
                             <option value="5.5">5½</option>
-                            <option value="6-">6-</option>
+                            <option value="5.75">6-</option>
                             <option value="6">6</option>
-                            <option value="6+">6+</option>
+                            <option value="6.25">6+</option>
                             <option value="6.5">6½</option>
-                            <option value="7-">7-</option>
+                            <option value="6.75">7-</option>
                             <option value="7">7</option>
-                            <option value="7+">7+</option>
+                            <option value="7.25">7+</option>
                             <option value="7.5">7½</option>
-                            <option value="8-">8-</option>
+                            <option value="7.75">8-</option>
                             <option value="8">8</option>
-                            <option value="8+">8+</option>
+                            <option value="8.25">8+</option>
                             <option value="8.5">8½</option>
-                            <option value="9-">9-</option>
+                            <option value="8.75">9-</option>
                             <option value="9">9</option>
                             <option value="10">10</option>
                         </select>
                     </div>
+
                     <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="aggiungiMedia">
-                        <label class="form-check-label" for="aggiungiMedia">
+                        <input type="checkbox" class="form-check-input" id="addToAverage">
+                        <label class="form-check-label" for="addToAverage">
                             Aggiungere per Media
                         </label>
                     </div>
+
                     <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="mostraFamiglia">
-                        <label class="form-check-label" for="mostraFamiglia">
+                        <input type="checkbox" class="form-check-input" id="showFamily">
+                        <label class="form-check-label" for="showFamily">
                             Mostra alla famiglia
                         </label>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Commento famiglia (max 250)</label>
-                        <textarea class="form-control" id="commentoFamiglia" maxlength="250" rows="2"></textarea>
-                        <small class="text-muted"><span id="contFamiglia">0</span>/250</small>
+                        <textarea class="form-control" id="familyComment" maxlength="250" rows="2"></textarea>
+                        <small class="text-muted"><span id="familyCharCount">0</span>/250</small>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Commento personale (max 250)</label>
-                        <textarea class="form-control" id="commentoPersonale" maxlength="250" rows="2"></textarea>
-                        <small class="text-muted"><span id="contPersonale">0</span>/250</small>
+                        <textarea class="form-control" id="personalComment" maxlength="250" rows="2"></textarea>
+                        <small class="text-muted"><span id="personalCharCount">0</span>/250</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                    <button type="button" class="btn btn-primary" onclick="salvaVoto()">Salva Voto</button>
+                    <button type="button" class="btn btn-primary" onclick="saveGrade()">Salva Voto</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+    <script src="firebase-config.js"></script>
+
     <script>
-        const alunni = ['BAGALINI ALISYA GIADA', 'CAVALLO MARIACELESTE', 'CICCONE LORENZA', 'COCCO REBECCA', 'D\'URBANO GABRIELE', 'DE ROSSI GIADA', 'DI LUZIO NICHOLAS', 'DI TOMO MIKAELA', 'GAUDINO MATTIA', 'MALANDRA GIULIA'];
+        let allStudents = [];
+        let currentStudentId = null;
+        let allGrades = {};
 
         document.addEventListener('DOMContentLoaded', function() {
-            const teacherName = localStorage.getItem('teacher_name');
-            if (!teacherName) window.location.href = 'index.html';
-            document.getElementById('teacherName').textContent = teacherName;
-
-            const today = new Date();
-            document.getElementById('dataProva').valueAsDate = today;
-            document.getElementById('dataValutazioneMultipla').valueAsDate = today;
-            const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-            document.getElementById('dataDal').valueAsDate = oneMonthAgo;
-            document.getElementById('dataAl').valueAsDate = today;
-
-            caricaAlunniProva();
-            caricaAlunniMultipla();
-            caricaTabolaScritti();
-
-            document.getElementById('commentoFamiglia').addEventListener('input', function() {
-                document.getElementById('contFamiglia').textContent = this.value.length;
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    window.location.href = 'index.html';
+                }
+                loadStudents();
             });
-            document.getElementById('commentoPersonale').addEventListener('input', function() {
-                document.getElementById('contPersonale').textContent = this.value.length;
+
+            document.getElementById('familyComment').addEventListener('input', function() {
+                document.getElementById('familyCharCount').textContent = this.value.length;
+            });
+            document.getElementById('personalComment').addEventListener('input', function() {
+                document.getElementById('personalCharCount').textContent = this.value.length;
             });
         });
 
-        function caricaAlunniProva() {
-            const container = document.getElementById('listaAlunniProva');
-            container.innerHTML = '';
-            alunni.forEach(alunno => {
-                const div = document.createElement('div');
-                div.className = 'form-check';
-                div.innerHTML = `
-                    <input type="checkbox" class="form-check-input alunno-prova" id="alunno_${alunno}" value="${alunno}">
-                    <label class="form-check-label" for="alunno_${alunno}">${alunno}</label>
-                `;
-                container.appendChild(div);
+        function loadStudents() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            db.ref('/utenti/' + user.uid + '/alunni').once('value', function(snapshot) {
+                const alunni = snapshot.val();
+                allStudents = alunni || {};
+
+                if (!alunni || Object.keys(alunni).length === 0) {
+                    document.getElementById('noStudentsAlert').style.display = 'block';
+                    document.getElementById('contentContainer').style.display = 'none';
+                } else {
+                    document.getElementById('noStudentsAlert').style.display = 'none';
+                    document.getElementById('contentContainer').style.display = 'block';
+                    loadGrades();
+                }
             });
         }
 
-        function caricaAlunniMultipla() {
-            const container = document.getElementById('listaAlunniMultipla');
-            container.innerHTML = '';
-            alunni.forEach(alunno => {
-                const div = document.createElement('div');
-                div.className = 'form-check';
-                div.innerHTML = `
-                    <input type="checkbox" class="form-check-input alunno-multipla" id="alunno_m_${alunno}" value="${alunno}">
-                    <label class="form-check-label" for="alunno_m_${alunno}">${alunno}</label>
-                `;
-                container.appendChild(div);
+        function loadGrades() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            db.ref('/utenti/' + user.uid + '/votiScritti').once('value', function(snapshot) {
+                allGrades = snapshot.val() || {};
+                renderStudentsList();
             });
         }
 
-        function caricaTabolaScritti() {
-            const tbody = document.getElementById('tabolaScritti');
-            tbody.innerHTML = '';
-            const voti = JSON.parse(localStorage.getItem('votiScritti') || '{}');
+        function renderStudentsList() {
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = '';
 
-            alunni.forEach(alunno => {
-                const votiAlunno = voti[alunno] || [];
-                const media = votiAlunno.length > 0 ? (votiAlunno.reduce((a, b) => a + b, 0) / votiAlunno.length).toFixed(2) : '-';
-                const oggiVoti = votiAlunno.filter(v => v.data === new Date().toISOString().split('T')[0]).length;
-
+            Object.entries(allStudents).forEach(([id, student]) => {
+                const grades = allGrades[id] || [];
+                const average = grades.length > 0 ? (grades.reduce((a, b) => a + parseFloat(b.voto), 0) / grades.length).toFixed(2) : '-';
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="cursor: pointer; color: #0D6EFD;" onclick="apriDettaglioVoto('${alunno}')">
-                        <strong>${alunno}</strong>
-                    </td>
-                    <td>${oggiVoti}</td>
-                    <td><strong>${media}</strong></td>
-                    <td>${votiAlunno.length}</td>
+                    <td>${student.nome} ${student.cognome}</td>
+                    <td><strong>${average}</strong></td>
+                    <td>${grades.length}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="apriDettaglioVoto('${alunno}')">
-                            <i class="fas fa-plus"></i>
+                        <button class="btn btn-sm btn-primary" onclick="openGradeModal('${id}', '${student.nome} ${student.cognome}')">
+                            <i class="fas fa-plus"></i> Aggiungi Voto
                         </button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                studentsList.appendChild(tr);
             });
         }
 
-        function apriDettaglioVoto(alunno) {
-            window.currentAlunno = alunno;
-            document.getElementById('nomeAlunnoVoto').textContent = alunno;
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDettaglioVoto')).show();
+        function openGradeModal(studentId, studentName) {
+            currentStudentId = studentId;
+            document.getElementById('modalStudentName').textContent = studentName;
+            document.getElementById('gradeSelect').value = '';
+            document.getElementById('addToAverage').checked = true;
+            document.getElementById('showFamily').checked = false;
+            document.getElementById('familyComment').value = '';
+            document.getElementById('personalComment').value = '';
+            document.getElementById('familyCharCount').textContent = '0';
+            document.getElementById('personalCharCount').textContent = '0';
+            new bootstrap.Modal(document.getElementById('gradeModal')).show();
         }
 
-        function salvaVoto() {
-            const voto = document.getElementById('selectVoto').value;
-            if (!voto) {
+        function saveGrade() {
+            const user = auth.currentUser;
+            const voto = document.getElementById('gradeSelect').value;
+
+            if (!user || !currentStudentId || !voto) {
                 alert('Seleziona un voto');
                 return;
             }
 
-            const votiScritti = JSON.parse(localStorage.getItem('votiScritti') || '{}');
-            if (!votiScritti[window.currentAlunno]) votiScritti[window.currentAlunno] = [];
-
-            votiScritti[window.currentAlunno].push({
+            const grade = {
                 voto: voto,
-                data: new Date().toISOString().split('T')[0],
-                media: document.getElementById('aggiungiMedia').checked,
-                mostraFamiglia: document.getElementById('mostraFamiglia').checked,
-                commentoFamiglia: document.getElementById('commentoFamiglia').value,
-                commentoPersonale: document.getElementById('commentoPersonale').value
-            });
+                data: new Date().toISOString(),
+                media: document.getElementById('addToAverage').checked,
+                mostraFamiglia: document.getElementById('showFamily').checked,
+                commentoFamiglia: document.getElementById('familyComment').value,
+                commentoPersonale: document.getElementById('personalComment').value
+            };
 
-            localStorage.setItem('votiScritti', JSON.stringify(votiScritti));
-            bootstrap.Modal.getInstance(document.getElementById('modalDettaglioVoto')).hide();
-            caricaTabolaScritti();
-            document.getElementById('selectVoto').value = '';
-            document.getElementById('commentoFamiglia').value = '';
-            document.getElementById('commentoPersonale').value = '';
-        }
-
-        function salvaProva() {
-            alert('Valutazione aggiunta');
-            bootstrap.Modal.getInstance(document.getElementById('modalNuovaProva')).hide();
-        }
-
-        function salvaValutazioneMultipla() {
-            const voto = document.getElementById('votoMultiplo').value;
-            if (!voto) {
-                alert('Seleziona un voto');
-                return;
+            if (!allGrades[currentStudentId]) {
+                allGrades[currentStudentId] = [];
             }
 
-            const alunniSelezionati = Array.from(document.querySelectorAll('.alunno-multipla:checked')).map(el => el.value);
-            if (alunniSelezionati.length === 0) {
-                alert('Seleziona almeno un alunno');
-                return;
-            }
+            allGrades[currentStudentId].push(grade);
 
-            const votiScritti = JSON.parse(localStorage.getItem('votiScritti') || '{}');
-            alunniSelezionati.forEach(alunno => {
-                if (!votiScritti[alunno]) votiScritti[alunno] = [];
-                votiScritti[alunno].push({
-                    voto: voto,
-                    data: new Date().toISOString().split('T')[0],
-                    media: true,
-                    mostraFamiglia: false,
-                    commentoFamiglia: '',
-                    commentoPersonale: ''
+            db.ref('/utenti/' + user.uid + '/votiScritti/' + currentStudentId).set(allGrades[currentStudentId])
+                .then(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('gradeModal')).hide();
+                    renderStudentsList();
+                })
+                .catch(error => {
+                    alert('Errore: ' + error.message);
                 });
-            });
-
-            localStorage.setItem('votiScritti', JSON.stringify(votiScritti));
-            alert('Valutazione multipla aggiunta');
-            bootstrap.Modal.getInstance(document.getElementById('modalValutazioneMultipla')).hide();
-            caricaTabolaScritti();
-        }
-
-        function filtraProve() {
-            alert('Filtri applicati');
         }
 
         function logout() {
-            localStorage.removeItem('teacher_name');
-            window.location.href = 'index.html';
+            if (confirm('Sei sicuro di voler uscire?')) {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                });
+            }
         }
     </script>
 </body>
